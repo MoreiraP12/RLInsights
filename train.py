@@ -1,0 +1,93 @@
+"""
+Script for training Stock Trading Bot.
+
+Usage:
+  train.py <train-stock> <val-stock> <train-acq-file> <train-disp-file> <val-acq-file> <val-disp-file> [--strategy=<strategy>]
+    [--window-size=<window-size>] [--batch-size=<batch-size>]
+    [--episode-count=<episode-count>] [--model-name=<model-name>]
+    [--pretrained] [--debug]
+
+Options:
+  --strategy=<strategy>             Q-learning strategy to use for training the network. Options:
+                                      `dqn` i.e. Vanilla DQN,
+                                      `t-dqn` i.e. DQN with fixed target distribution,
+                                      `double-dqn` i.e. DQN with separate network for value estimation. [default: t-dqn]
+  --window-size=<window-size>       Size of the n-day window stock data representation
+                                    used as the feature vector. [default: 10]
+  --batch-size=<batch-size>         Number of samples to train on in one mini-batch
+                                    during training. [default: 32]
+  --episode-count=<episode-count>   Number of trading episodes to use for training. [default: 50]
+  --model-name=<model-name>         Name of the pretrained model to use. [default: model_debug]
+  --pretrained                      Specifies whether to continue training a previously
+                                    trained model (reads `model-name`).
+  --debug                           Specifies whether to use verbose logs during eval operation.
+"""
+
+import logging
+import coloredlogs
+
+from docopt import docopt
+
+from trading_bot.agent import Agent
+from trading_bot.methods import train_model, evaluate_model
+from trading_bot.utils import (
+    get_stock_data,
+    format_currency,
+    format_position,
+    show_train_result,
+    switch_k_backend_device,
+    get_insider_trade_data
+)
+
+
+def main(train_stock, val_stock, train_acq_file, train_dis_file, val_acq_file, val_dis_file, window_size, batch_size, ep_count,
+         strategy="t-dqn", model_name="model_debug", pretrained=False,
+         debug=False):
+    """ Trains the stock trading bot using Deep Q-Learning.
+    Please see https://arxiv.org/abs/1312.5602 for more details.
+
+    Args: [python train.py --help]
+    """
+    agent = Agent(window_size, strategy=strategy, pretrained=pretrained, model_name=model_name)
+    
+    train_data = get_stock_data(train_stock)
+    train_insider_data = get_insider_trade_data(train_acq_file, train_dis_file)
+    val_data = get_stock_data(val_stock)
+    val_insider_data = get_insider_trade_data(val_acq_file, val_dis_file)
+  
+
+    initial_offset = val_data[1] - val_data[0]
+
+    for episode in range(1, ep_count + 1):
+        train_result = train_model(agent, episode, train_data, train_insider_data, ep_count=ep_count,
+                                   batch_size=batch_size, window_size=window_size)
+        val_result, _ = evaluate_model(agent, val_data, val_insider_data, window_size, debug)
+        show_train_result(train_result, val_result, initial_offset)
+
+
+if __name__ == "__main__":
+    args = docopt(__doc__)
+
+    train_stock = args["<train-stock>"]
+    val_stock = args["<val-stock>"]
+    train_acq_file = args["<train-acq-file>"]
+    train_dis_file = args["<train-disp-file>"]
+    val_acq_file = args["<val-acq-file>"]
+    val_dis_file = args["<val-disp-file>"]
+    strategy = args["--strategy"]
+    window_size = int(args["--window-size"])
+    batch_size = int(args["--batch-size"])
+    ep_count = int(args["--episode-count"])
+    model_name = args["--model-name"]
+    pretrained = args["--pretrained"]
+    debug = args["--debug"]
+
+    coloredlogs.install(level="DEBUG")
+    switch_k_backend_device()
+
+    try:
+        main(train_stock, val_stock, train_acq_file, train_dis_file, val_acq_file, val_dis_file, window_size, batch_size,
+             ep_count, strategy=strategy, model_name=model_name, 
+             pretrained=pretrained, debug=debug)
+    except KeyboardInterrupt:
+        print("Aborted!")
