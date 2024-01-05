@@ -8,14 +8,18 @@
             "request": "launch",
             "program": "train.py",
             "args": [
+                "data/GOOG.csv",
                 "data/GOOG_2018.csv",
-                "data/GOOG_2019.csv",
+                "data/GOOG_acq.csv",
+                "data/GOOG_dis.csv",
                 "data/GOOG_2018_acq_counts_full.csv",
                 "data/GOOG_2018_disp_counts_full.csv",
-                "data/GOOG_2019_acq_counts_full.csv",
-                "data/GOOG_2019_disp_counts_full.csv",
                 "--strategy",
-                "double-dqn"
+                "double-dqn",
+                "--window-size",
+                "60",
+                "--episode-count",
+                "20"
             ],
             "console": "integratedTerminal"
         }
