@@ -16,10 +16,11 @@
                 "data/GOOG_2018_disp_counts_full.csv",
                 "--strategy",
                 "double-dqn",
-                "--window-size",
-                "60",
                 "--episode-count",
-                "20"
+                "5",
+                "--model-name",
+                "model_double-dqn_GOOG_50",
+                "--pretrained"
             ],
             "console": "integratedTerminal"
         }

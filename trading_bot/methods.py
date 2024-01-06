@@ -54,7 +54,7 @@ def train_model(agent, episode, data, insider_data, ep_count=100, batch_size=32,
 
         state = next_state
 
-    if episode % 10 == 0:
+    if episode % 1 == 0:
         agent.save(episode)
 
     return (episode, ep_count, total_profit, np.mean(np.array(avg_loss)))

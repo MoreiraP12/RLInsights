@@ -52,13 +52,13 @@ pip3 install -r requirements.txt
 Now you can open up a terminal and start training the agent:
 
 ```bash
-python3 train.py data/GOOG.csv data/GOOG_2018.csv --strategy t-dqn
+python3 train.py data/GOOG.csv data/GOOG_2019.csv data/GOOG_acq.csv data/GOOG_dis.csv data/GOOG_2019_acq_counts_full.csv data/GOOG_2019_dis_counts_full.csv --strategy t-dqn
 ```
 
 Once you're done training, run the evaluation script and let the agent make trading decisions:
 
 ```bash
-python3 eval.py data/GOOG_2019.csv --model-name model_GOOG_50 --debug
+python3 eval.py data/GOOG_2019.csv data/GOOG_2019_acq_counts_full.csv data/GOOG_2019_dis_counts_full.csv --model-name model_GOOG_50 --debug
 ```
 
 Now you are all set up!
